@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Sparkles, Check, X, Mic } from "lucide-react";
+import { Sparkles, Check, X } from "lucide-react";
+import SukiLogo from "./SukiLogo";
 
 type HudMode = "idle" | "recording" | "processing" | "error";
 
@@ -177,7 +178,7 @@ export default function FloatingHud() {
         {mode === "idle" && (
           <div className="flex w-full items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <Mic className="h-3.5 w-3.5 text-suki-emerald" />
+              <SukiLogo size={16} />
               <span className="text-xs font-medium text-suki-sand">Click to dictate</span>
             </div>
             <span className="rounded-md bg-suki-raised/80 px-1.5 py-0.5 font-mono text-[10px] text-suki-champagne">

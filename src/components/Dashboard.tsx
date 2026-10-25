@@ -34,11 +34,11 @@ import {
   Trash2,
   Palette,
 } from "lucide-react";
+import SukiLogo from "./SukiLogo";
 import LogoShowcase, {
   LogoConceptA,
   LogoConceptB,
   LogoConceptC,
-  LogoConceptD,
   LogoConceptE,
 } from "./LogoShowcase";
 
@@ -130,8 +130,8 @@ export default function Dashboard() {
   }>({ registered: false });
   const [isRecordingShortcut, setIsRecordingShortcut] = useState<boolean>(false);
   const [autoStart, setAutoStart] = useState<boolean>(false);
-  const [showLogoLab, setShowLogoLab] = useState<boolean>(true);
-  const [activeLogoConcept, setActiveLogoConcept] = useState<string>("A");
+  const [showLogoLab, setShowLogoLab] = useState<boolean>(false);
+  const [activeLogoConcept, setActiveLogoConcept] = useState<string>("D");
 
   // Custom Dictionary & Voice Snippets State
   const [vocabList, setVocabList] = useState<string[]>(() => {
@@ -571,7 +571,7 @@ export default function Dashboard() {
             {activeLogoConcept === "A" && <LogoConceptA size={24} />}
             {activeLogoConcept === "B" && <LogoConceptB size={24} />}
             {activeLogoConcept === "C" && <LogoConceptC size={24} />}
-            {activeLogoConcept === "D" && <LogoConceptD size={24} />}
+            {activeLogoConcept === "D" && <SukiLogo size={24} />}
             {activeLogoConcept === "E" && <LogoConceptE size={24} />}
           </div>
           <div>
