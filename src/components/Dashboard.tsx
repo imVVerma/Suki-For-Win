@@ -39,6 +39,7 @@ import LogoShowcase, {
   LogoConceptB,
   LogoConceptC,
   LogoConceptD,
+  LogoConceptE,
 } from "./LogoShowcase";
 
 export interface DictationEntry {
@@ -571,6 +572,7 @@ export default function Dashboard() {
             {activeLogoConcept === "B" && <LogoConceptB size={24} />}
             {activeLogoConcept === "C" && <LogoConceptC size={24} />}
             {activeLogoConcept === "D" && <LogoConceptD size={24} />}
+            {activeLogoConcept === "E" && <LogoConceptE size={24} />}
           </div>
           <div>
             <h1 className="text-base font-semibold tracking-tight flex items-center gap-2">
