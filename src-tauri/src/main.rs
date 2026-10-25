@@ -12,6 +12,7 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Emitter, Manager, State, WebviewWindow, WindowEvent,
 };
+use tauri_plugin_autostart::MacosLauncher;
 
 #[cfg(target_os = "windows")]
 use windows::Win32::Foundation::HWND;
@@ -214,7 +215,12 @@ fn main() {
         }))
         // 2. Global Shortcut Plugin for push-to-talk / toggle dictation hotkey
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        // 3. Keep Suki alive in the background when the main window is closed
+        // 3. Autostart Plugin (Passes "--minimized" when Windows boots)
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec!["--minimized"]),
+        ))
+        // 4. Keep Suki alive in the background when the main window is closed
         .on_window_event(|window, event| {
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
@@ -224,7 +230,7 @@ fn main() {
             }
         })
         .setup(|app| {
-            // 4. Initialize SQLite strictly inside %APPDATA%\Suki\
+            // 5. Initialize SQLite strictly inside %APPDATA%\Suki\
             let app_data = std::env::var_os("APPDATA")
                 .map(std::path::PathBuf::from)
                 .unwrap_or_else(|| {
@@ -238,11 +244,11 @@ fn main() {
             let conn = db::init_db(&db_path).expect("Failed to initialize SQLite database");
             app.manage(Mutex::new(conn));
 
-            // 5. Initialize in-memory audio engine & API key store
+            // 6. Initialize in-memory audio engine & API key store
             app.manage(audio::AudioRecorder::new());
             app.manage(ApiKeyStore(Mutex::new(String::new())));
 
-            // 6. Apply Win32 non-activating styles to the HUD overlay & position bottom-center
+            // 7. Apply Win32 non-activating styles to the HUD overlay & position bottom-center
             if let Some(hud_window) = app.get_webview_window("hud") {
                 #[cfg(target_os = "windows")]
                 make_window_non_activating(&hud_window);
@@ -257,7 +263,7 @@ fn main() {
                 }
             }
 
-            // 7. BUILD THE WINDOWS SYSTEM TRAY ICON & RIGHT-CLICK MENU
+            // 8. BUILD THE WINDOWS SYSTEM TRAY ICON & RIGHT-CLICK MENU
             let show_item =
                 MenuItem::with_id(app, "show_dashboard", "Open Suki Dashboard", true, None::<&str>)?;
             let toggle_hud_item =
@@ -314,6 +320,15 @@ fn main() {
             }
 
             let _tray = tray_builder.build(app)?;
+
+            // 9. SILENT BOOT CHECK: If launched by Windows Startup with "--minimized",
+            // hide the Dashboard so Suki starts silently in the system tray!
+            let args: Vec<String> = std::env::args().collect();
+            if args.iter().any(|arg| arg == "--minimized") {
+                if let Some(main_win) = app.get_webview_window("main") {
+                    let _ = main_win.hide();
+                }
+            }
 
             Ok(())
         })

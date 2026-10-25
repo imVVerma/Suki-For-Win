@@ -6,6 +6,7 @@ import {
   unregisterAll,
   ShortcutEvent,
 } from "@tauri-apps/plugin-global-shortcut";
+import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import {
   Mic,
   History,
@@ -70,6 +71,7 @@ export default function Dashboard() {
     error?: string;
   }>({ registered: false });
   const [isRecordingShortcut, setIsRecordingShortcut] = useState<boolean>(false);
+  const [autoStart, setAutoStart] = useState<boolean>(false);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [digestMarkdown, setDigestMarkdown] = useState<string>("");
@@ -81,6 +83,27 @@ export default function Dashboard() {
   const hotkeyModeRef = useRef<"toggle" | "hold">(hotkeyMode);
   apiKeyRef.current = apiKey;
   hotkeyModeRef.current = hotkeyMode;
+
+  // Check current Windows autostart status on mount
+  useEffect(() => {
+    isEnabled()
+      .then((enabled) => setAutoStart(enabled))
+      .catch((err) => console.warn("Autostart check failed:", err));
+  }, []);
+
+  const handleToggleAutoStart = async () => {
+    try {
+      if (autoStart) {
+        await disable();
+        setAutoStart(false);
+      } else {
+        await enable();
+        setAutoStart(true);
+      }
+    } catch (err) {
+      console.error("Failed to toggle Windows autostart:", err);
+    }
+  };
 
   const fetchHistory = async () => {
     try {
@@ -740,6 +763,38 @@ export default function Dashboard() {
                   </p>
                 </button>
               </div>
+            </div>
+
+            {/* Launch on Windows Startup Toggle Card */}
+            <div className="flex items-center justify-between bg-suki-surface border border-suki-line/80 shadow-tactile rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mt-0.5">
+                  <Power className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-suki-ivory">
+                    Launch Suki on Windows Startup
+                  </div>
+                  <div className="text-[11px] text-suki-sand mt-0.5">
+                    Starts silently in the System Tray with the Floating HUD ready when you log in.
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleAutoStart}
+                aria-label="Toggle Windows Startup"
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                  autoStart ? "bg-emerald-500" : "bg-zinc-700"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    autoStart ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
             </div>
 
             <div className="bg-suki-surface border border-suki-line/80 shadow-tactile rounded-xl p-4 text-xs text-suki-sand space-y-2">
