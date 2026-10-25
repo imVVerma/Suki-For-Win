@@ -30,6 +30,8 @@ import {
   Plus,
   X,
   RotateCcw,
+  Sliders,
+  Trash2,
 } from "lucide-react";
 
 export interface DictationEntry {
@@ -41,6 +43,37 @@ export interface DictationEntry {
   duration_sec: number;
   word_count: number;
 }
+
+export interface ToneProfileRule {
+  id: string;
+  name: string;
+  keywords: string[];
+  prompt_rule: string;
+}
+
+export const DEFAULT_TONE_PROFILES: ToneProfileRule[] = [
+  {
+    id: "code",
+    name: "Code & Terminal Mode",
+    keywords: ["Visual Studio Code", "Cursor", "PowerShell", "Ubuntu", "WSL", "GitHub"],
+    prompt_rule:
+      "Preserve technical terms, camelCase/snake_case identifiers, and CLI commands accurately. Do not auto-capitalize CLI flags or code snippets.",
+  },
+  {
+    id: "pro",
+    name: "Professional & Academic",
+    keywords: ["Gmail", "Outlook", "Slack", "Teams", "Notion", "Docs", "LinkedIn"],
+    prompt_rule:
+      "Use crisp, well-structured professional grammar, proper capitalization, and clean bullet points if multiple items are listed.",
+  },
+  {
+    id: "casual",
+    name: "Casual Chat Mode",
+    keywords: ["WhatsApp", "Discord", "Telegram", "Instagram"],
+    prompt_rule:
+      "Keep the tone warm, conversational, and natural. Avoid overly stiff corporate phrasing or unnecessary trailing periods on short one-liners.",
+  },
+];
 
 export function normalizeShortcut(keyStr: string): string {
   let s = (keyStr || "").trim();
@@ -64,7 +97,7 @@ const DEFAULT_VOCAB = [
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<
-    "history" | "insights" | "dictionary" | "settings"
+    "history" | "insights" | "dictionary" | "profiles" | "settings"
   >("history");
   const [entries, setEntries] = useState<DictationEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -124,6 +157,76 @@ export default function Dashboard() {
   const resetVocabToDefaults = () => {
     setVocabList(DEFAULT_VOCAB);
     localStorage.setItem("suki_custom_vocab", JSON.stringify(DEFAULT_VOCAB));
+  };
+
+  // Per-App Tone Profiles State
+  const [toneProfiles, setToneProfiles] = useState<ToneProfileRule[]>(() => {
+    try {
+      const saved = localStorage.getItem("suki_tone_profiles");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return DEFAULT_TONE_PROFILES;
+  });
+  const [newKeywords, setNewKeywords] = useState<{ [key: string]: string }>({});
+  const toneProfilesRef = useRef<ToneProfileRule[]>(toneProfiles);
+  toneProfilesRef.current = toneProfiles;
+
+  const saveToneProfiles = (updated: ToneProfileRule[]) => {
+    setToneProfiles(updated);
+    localStorage.setItem("suki_tone_profiles", JSON.stringify(updated));
+  };
+
+  const addToneProfile = () => {
+    const newProfile: ToneProfileRule = {
+      id: "profile_" + Date.now(),
+      name: "Custom Application Mode",
+      keywords: ["AppName"],
+      prompt_rule: "Use concise phrasing with natural punctuation and formatting suited to this app.",
+    };
+    saveToneProfiles([...toneProfiles, newProfile]);
+  };
+
+  const updateToneProfile = (id: string, updates: Partial<ToneProfileRule>) => {
+    const updated = toneProfiles.map((p) => (p.id === id ? { ...p, ...updates } : p));
+    saveToneProfiles(updated);
+  };
+
+  const removeToneProfile = (id: string) => {
+    if (toneProfiles.length <= 1) return;
+    const updated = toneProfiles.filter((p) => p.id !== id);
+    saveToneProfiles(updated);
+  };
+
+  const resetToneProfiles = () => {
+    saveToneProfiles(DEFAULT_TONE_PROFILES);
+  };
+
+  const addKeywordToProfile = (profileId: string) => {
+    const kw = (newKeywords[profileId] || "").trim();
+    if (!kw) return;
+    const profile = toneProfiles.find((p) => p.id === profileId);
+    if (!profile) return;
+    if (profile.keywords.some((k) => k.toLowerCase() === kw.toLowerCase())) {
+      setNewKeywords((prev) => ({ ...prev, [profileId]: "" }));
+      return;
+    }
+    const updated = toneProfiles.map((p) =>
+      p.id === profileId ? { ...p, keywords: [...p.keywords, kw] } : p
+    );
+    saveToneProfiles(updated);
+    setNewKeywords((prev) => ({ ...prev, [profileId]: "" }));
+  };
+
+  const removeKeywordFromProfile = (profileId: string, keywordToRemove: string) => {
+    const updated = toneProfiles.map((p) =>
+      p.id === profileId
+        ? { ...p, keywords: p.keywords.filter((k) => k !== keywordToRemove) }
+        : p
+    );
+    saveToneProfiles(updated);
   };
 
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -246,6 +349,7 @@ export default function Dashboard() {
                   await invoke<DictationEntry>("stop_and_transcribe", {
                     apiKey: apiKeyRef.current,
                     customVocab: vocabRef.current.join(", "),
+                    toneRules: toneProfilesRef.current,
                   });
                   await fetchHistory();
                   setStatusBanner(null);
@@ -283,6 +387,7 @@ export default function Dashboard() {
                 await invoke<DictationEntry>("stop_and_transcribe", {
                   apiKey: apiKeyRef.current,
                   customVocab: vocabRef.current.join(", "),
+                  toneRules: toneProfilesRef.current,
                 });
                 await fetchHistory();
                 setStatusBanner(null);
@@ -380,6 +485,7 @@ export default function Dashboard() {
         await invoke("stop_and_transcribe", {
           apiKey,
           customVocab: vocabRef.current.join(", "),
+          toneRules: toneProfilesRef.current,
         });
         await fetchHistory();
         setStatusBanner(null);
@@ -537,6 +643,12 @@ export default function Dashboard() {
             label: "Custom Dictionary",
             icon: BookOpen,
             count: vocabList.length,
+          },
+          {
+            id: "profiles",
+            label: "Tone Profiles",
+            icon: Sliders,
+            count: toneProfiles.length,
           },
           { id: "settings", label: "BYOK Settings", icon: Settings },
         ].map((tab) => {
@@ -786,6 +898,166 @@ export default function Dashboard() {
               </p>
               <p>
                 <strong>2. Stage 2 (Llama Context &amp; Snippet Expansion):</strong> The list is injected into the LLM system prompt to enforce proper casing and expand any <code className="text-suki-champagne">spoken phrase -&gt; full replacement</code> voice shortcuts before pasting at your cursor.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "profiles" && (
+          <div className="max-w-2xl space-y-6">
+            {/* Header / Intro */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-suki-ivory flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-suki-emerald" />
+                  Per-App Tone Profiles
+                </h2>
+                <p className="text-xs text-suki-sand mt-0.5">
+                  Automatically adapts formatting, tone, and casing depending on your active foreground window.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetToneProfiles}
+                  className="px-2.5 py-1.5 rounded-lg border border-suki-line/80 bg-suki-surface hover:bg-suki-raised text-[11px] font-medium text-suki-sand hover:text-suki-ivory flex items-center gap-1.5 transition"
+                  title="Reset to default IDE, Professional, and Casual profiles"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset Defaults
+                </button>
+                <button
+                  type="button"
+                  onClick={addToneProfile}
+                  className="px-3 py-1.5 rounded-lg bg-suki-emeraldDeep hover:bg-suki-emerald/30 border border-suki-emerald/40 text-suki-ivory text-xs font-medium flex items-center gap-1.5 transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add Profile
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Cards */}
+            <div className="space-y-4">
+              {toneProfiles.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="bg-suki-surface border border-suki-line/80 shadow-tactile rounded-xl p-4.5 space-y-3.5"
+                >
+                  {/* Card Header: Profile Title & Delete Button */}
+                  <div className="flex items-center justify-between gap-3 border-b border-suki-line/50 pb-2.5">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="w-2 h-2 rounded-full bg-suki-emerald" />
+                      <input
+                        type="text"
+                        value={profile.name}
+                        onChange={(e) =>
+                          updateToneProfile(profile.id, { name: e.target.value })
+                        }
+                        placeholder="Profile Name"
+                        className="bg-transparent text-sm font-semibold text-suki-ivory focus:outline-none focus:border-b border-suki-emerald/60 px-1 py-0.5 w-full"
+                      />
+                    </div>
+                    {toneProfiles.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeToneProfile(profile.id)}
+                        className="text-suki-muted hover:text-rose-400 p-1 rounded hover:bg-rose-500/10 transition"
+                        title="Delete Profile"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Window Keywords Section */}
+                  <div className="space-y-2">
+                    <label className="block text-[11px] font-medium text-suki-sand">
+                      Trigger Window Keywords (matched against active window title):
+                    </label>
+
+                    {/* Keywords tags */}
+                    <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+                      {profile.keywords.map((kw) => (
+                        <span
+                          key={kw}
+                          className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-suki-raised border border-suki-line text-suki-ivory"
+                        >
+                          <span>{kw}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeKeywordFromProfile(profile.id, kw)}
+                            className="hover:text-rose-400 text-suki-muted ml-0.5"
+                            title={`Remove "${kw}"`}
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Add Keyword input */}
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        addKeywordToProfile(profile.id);
+                      }}
+                      className="flex items-center gap-2 pt-1"
+                    >
+                      <input
+                        type="text"
+                        value={newKeywords[profile.id] || ""}
+                        onChange={(e) =>
+                          setNewKeywords((prev) => ({
+                            ...prev,
+                            [profile.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Add window title keyword (e.g. Outlook, Slack, Chrome)..."
+                        className="flex-1 bg-suki-raised border border-suki-line rounded-lg px-2.5 py-1.5 text-xs text-suki-ivory placeholder:text-suki-muted focus:outline-none focus:border-suki-emerald"
+                      />
+                      <button
+                        type="submit"
+                        className="px-2.5 py-1.5 rounded-lg bg-suki-raised border border-suki-line hover:border-suki-emerald/40 text-xs font-medium text-suki-sand hover:text-suki-ivory transition"
+                      >
+                        + Add
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* LLM Formatting Directive */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="block text-[11px] font-medium text-suki-sand flex items-center justify-between">
+                      <span>Llama System Prompt Directive:</span>
+                      <span className="text-[10px] text-suki-muted font-mono">
+                        Prioritized in system prompt
+                      </span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={profile.prompt_rule}
+                      onChange={(e) =>
+                        updateToneProfile(profile.id, { prompt_rule: e.target.value })
+                      }
+                      placeholder="Enter formatting instructions for Llama when this window profile matches..."
+                      className="w-full bg-suki-raised border border-suki-line rounded-lg px-3 py-2 text-xs text-suki-ivory placeholder:text-suki-muted focus:outline-none focus:border-suki-emerald resize-y leading-relaxed"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Architecture Card */}
+            <div className="bg-suki-surface border border-suki-line/60 rounded-xl p-4 text-xs text-suki-sand space-y-2">
+              <div className="font-semibold text-suki-ivory flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-suki-emerald" />
+                How Active Window Matching Works
+              </div>
+              <p>
+                When you initiate or finalize dictation, Suki reads the active foreground window title via native Win32 APIs (<code className="font-mono text-suki-champagne">GetForegroundWindow</code> &amp; <code className="font-mono text-suki-champagne">GetWindowTextW</code>) without taking focus away from your target application.
+              </p>
+              <p>
+                If the window title matches any keyword in your profiles, the profile rule is injected directly into Llama 3.3/3.1 as an <code className="font-mono text-suki-emerald">ACTIVE APP TONE PROFILE</code> instruction before injecting clean text at your cursor.
               </p>
             </div>
           </div>

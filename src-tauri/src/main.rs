@@ -99,6 +99,23 @@ fn cancel_recording(
     Ok(())
 }
 
+#[derive(serde::Deserialize, serde::Serialize, Clone, Debug)]
+pub struct ToneProfileRule {
+    pub name: String,
+    pub keywords: Vec<String>,
+    pub prompt_rule: String,
+}
+
+fn resolve_style_for_window(window_title: &str, rules: &[ToneProfileRule]) -> String {
+    let lower_title = window_title.to_lowercase();
+    for rule in rules {
+        if rule.keywords.iter().any(|k| !k.trim().is_empty() && lower_title.contains(&k.to_lowercase())) {
+            return format!("[Profile: {}] {}", rule.name, rule.prompt_rule);
+        }
+    }
+    "Use clean, natural punctuation and clear formatting suited to the active window.".to_string()
+}
+
 #[tauri::command]
 async fn stop_and_transcribe(
     app: tauri::AppHandle,
@@ -107,6 +124,7 @@ async fn stop_and_transcribe(
     key_store: State<'_, ApiKeyStore>,
     api_key: Option<String>,
     custom_vocab: Option<String>,
+    tone_rules: Option<Vec<ToneProfileRule>>,
 ) -> Result<db::DictationEntry, String> {
     // 1. Resolve API key from argument or stored state
     let effective_key = match api_key.filter(|k| !k.trim().is_empty()) {
@@ -127,6 +145,12 @@ async fn stop_and_transcribe(
     // 2. Grab the active window title BEFORE anything changes
     let active_app = get_active_window_context();
 
+    // Match the active window title against the user's Per-App Tone Profiles!
+    let matched_style = tone_rules
+        .as_deref()
+        .map(|rules| resolve_style_for_window(&active_app, rules))
+        .unwrap_or_default();
+
     // 3. Notify HUD to show processing spinner
     let _ = app.emit("hud-state", serde_json::json!({ "mode": "processing" }));
 
@@ -136,7 +160,7 @@ async fn stop_and_transcribe(
         e
     })?;
 
-    // 5. Transcribe with Whisper-Large-V3-Turbo (with acoustic prompt bias) & Polish with LLM (with dictionary rules)
+    // 5. Transcribe with Whisper-Large-V3-Turbo (with acoustic prompt bias) & Polish with LLM (with dictionary rules and active tone profile)
     let raw_text = match groq::transcribe_wav_bytes(&effective_key, wav_bytes, &vocab_str).await {
         Ok(t) => t,
         Err(e) => {
@@ -145,9 +169,15 @@ async fn stop_and_transcribe(
         }
     };
 
-    let polished_text = groq::polish_transcript(&effective_key, &raw_text, &active_app, &vocab_str)
-        .await
-        .unwrap_or_else(|_| raw_text.clone());
+    let polished_text = groq::polish_transcript(
+        &effective_key,
+        &raw_text,
+        &active_app,
+        &vocab_str,
+        &matched_style,
+    )
+    .await
+    .unwrap_or_else(|_| raw_text.clone());
 
     // 6. Hide HUD and inject text directly into the active window
     if let Some(hud) = app.get_webview_window("hud") {

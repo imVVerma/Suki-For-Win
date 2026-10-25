@@ -216,24 +216,31 @@ pub async fn transcribe_wav_bytes(
     Ok(parsed.text.trim().to_string())
 }
 
-/// Step 2: Polish transcript with Groq LLMs + Custom Dictionary & Voice Snippets
+/// Step 2: Polish transcript with Groq LLMs + Custom Dictionary & Per-App Tone Profiles
 pub async fn polish_transcript(
     api_key: &str,
     raw_text: &str,
     active_window_title: &str,
     custom_vocab: &str,
+    style_instruction: &str,
 ) -> Result<String, String> {
     if raw_text.trim().is_empty() {
         return Ok(String::new());
     }
 
-    let vocab_instruction = if custom_vocab.trim().is_empty() {
+    let vocab_rule = if custom_vocab.trim().is_empty() {
         String::new()
     } else {
         format!(
-            "\n5. CUSTOM DICTIONARY & SNIPPETS: Strictly enforce these exact spellings, proper nouns, and `spoken -> replacement` snippet rules if similar-sounding words appear: [{}].",
+            "\n5. CUSTOM DICTIONARY & SNIPPETS: Strictly enforce these exact spellings, proper nouns, and `spoken -> replacement` rules: [{}].",
             custom_vocab.trim()
         )
+    };
+
+    let tone_rule = if style_instruction.trim().is_empty() {
+        "Adapt formatting naturally to the active window context.".to_string()
+    } else {
+        format!("ACTIVE APP TONE PROFILE: {}", style_instruction.trim())
     };
 
     let system_prompt = format!(
@@ -242,9 +249,9 @@ pub async fn polish_transcript(
          Rules:\n\
          1. Remove spoken disfluencies, stutters, and filler words ('um', 'uh', 'like', 'you know').\n\
          2. If the user corrects themselves mid-sentence ('meet at 4 no wait 5 PM'), output only the final intended meaning ('meet at 5 PM').\n\
-         3. Adapt formatting subtly to the active window (e.g., if in Visual Studio Code or terminal, preserve technical terms, variable casing, and CLI flags accurately; if in email/chat, use natural punctuation).\n\
+         3. {}\n\
          4. Output ONLY the final cleaned text. Never add quotes, preambles, or explanations.{}",
-        active_window_title, vocab_instruction
+        active_window_title, tone_rule, vocab_rule
     );
 
     let messages = json!([

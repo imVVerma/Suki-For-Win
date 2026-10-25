@@ -47,7 +47,16 @@ export default function FloatingHud() {
         } catch (_) {}
         return "";
       })();
-      await invoke("stop_and_transcribe", { customVocab });
+      const toneRules = (() => {
+        try {
+          const saved = localStorage.getItem("suki_tone_profiles");
+          if (saved) {
+            return JSON.parse(saved);
+          }
+        } catch (_) {}
+        return undefined;
+      })();
+      await invoke("stop_and_transcribe", { customVocab, toneRules });
     } catch (err) {
       console.error("Keep error:", err);
       setMode("error");
