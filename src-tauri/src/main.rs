@@ -193,6 +193,11 @@ async fn generate_daily_digest_cmd(
     groq::generate_daily_insights(&effective_key, &joined_logs).await
 }
 
+#[tauri::command]
+fn quit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 fn main() {
     tauri::Builder::default()
         // 1. BULLETPROOF GUARD: Prevents multiple .exe instances from ever spawning
@@ -204,8 +209,17 @@ fn main() {
         }))
         // 2. Global Shortcut Plugin for push-to-talk / toggle dictation hotkey
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        // 3. Keep Suki alive in the background when the main window is closed
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                if window.label() == "main" {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .setup(|app| {
-            // 3. Initialize SQLite strictly inside %APPDATA%\Suki\
+            // 4. Initialize SQLite strictly inside %APPDATA%\Suki\
             let app_data = std::env::var_os("APPDATA")
                 .map(std::path::PathBuf::from)
                 .unwrap_or_else(|| {
@@ -219,11 +233,11 @@ fn main() {
             let conn = db::init_db(&db_path).expect("Failed to initialize SQLite database");
             app.manage(Mutex::new(conn));
 
-            // 4. Initialize in-memory audio engine & API key store
+            // 5. Initialize in-memory audio engine & API key store
             app.manage(audio::AudioRecorder::new());
             app.manage(ApiKeyStore(Mutex::new(String::new())));
 
-            // 5. Apply Win32 non-activating styles to the HUD overlay & position bottom-center
+            // 6. Apply Win32 non-activating styles to the HUD overlay & position bottom-center
             if let Some(hud_window) = app.get_webview_window("hud") {
                 #[cfg(target_os = "windows")]
                 make_window_non_activating(&hud_window);
@@ -249,6 +263,7 @@ fn main() {
             cancel_recording,
             stop_and_transcribe,
             generate_daily_digest_cmd,
+            quit_app,
             db::get_recent_dictations,
             db::get_today_dictations,
             db::insert_dictation

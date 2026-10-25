@@ -21,6 +21,10 @@ import {
   ExternalLink,
   Info,
   Radio,
+  Keyboard,
+  CheckCircle2,
+  AlertCircle,
+  Power,
 } from "lucide-react";
 
 export interface DictationEntry {
@@ -33,6 +37,15 @@ export interface DictationEntry {
   word_count: number;
 }
 
+export function normalizeShortcut(keyStr: string): string {
+  let s = (keyStr || "").trim();
+  s = s.replace(/CommandOrControl/gi, "Control");
+  s = s.replace(/Ctrl/gi, "Control");
+  s = s.replace(/Cmd/gi, "Super");
+  s = s.replace(/Win/gi, "Super");
+  return s || "Control+Shift+Space";
+}
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"history" | "insights" | "settings">("history");
   const [entries, setEntries] = useState<DictationEntry[]>([]);
@@ -40,12 +53,23 @@ export default function Dashboard() {
   const [apiKey, setApiKey] = useState<string>(
     () => localStorage.getItem("suki_groq_api_key") || ""
   );
-  const [hotkey, setHotkey] = useState<string>(
-    () => localStorage.getItem("suki_hotkey") || "CommandOrControl+Shift+Space"
-  );
+  const [hotkey, setHotkey] = useState<string>(() => {
+    const saved = localStorage.getItem("suki_hotkey");
+    if (!saved || saved.toLowerCase().includes("commandorcontrol")) {
+      const defaultKey = "Control+Shift+Space";
+      localStorage.setItem("suki_hotkey", defaultKey);
+      return defaultKey;
+    }
+    return normalizeShortcut(saved);
+  });
   const [hotkeyMode, setHotkeyMode] = useState<"toggle" | "hold">(
     () => (localStorage.getItem("suki_hotkey_mode") as "toggle" | "hold") || "toggle"
   );
+  const [hotkeyStatus, setHotkeyStatus] = useState<{
+    registered: boolean;
+    error?: string;
+  }>({ registered: false });
+  const [isRecordingShortcut, setIsRecordingShortcut] = useState<boolean>(false);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [digestMarkdown, setDigestMarkdown] = useState<string>("");
@@ -109,7 +133,8 @@ export default function Dashboard() {
     const setupShortcut = async () => {
       try {
         await unregisterAll();
-        await register(hotkey, async (event: ShortcutEvent) => {
+        const cleanKey = normalizeShortcut(hotkey);
+        await register(cleanKey, async (event: ShortcutEvent) => {
           if (!isMounted) return;
 
           const mode = hotkeyModeRef.current;
@@ -190,8 +215,14 @@ export default function Dashboard() {
             }
           }
         });
+        if (isMounted) {
+          setHotkeyStatus({ registered: true });
+        }
       } catch (err) {
-        console.warn("Global shortcut registration note:", err);
+        console.warn("Global shortcut registration failed:", err);
+        if (isMounted) {
+          setHotkeyStatus({ registered: false, error: String(err) });
+        }
       }
     };
 
@@ -201,6 +232,47 @@ export default function Dashboard() {
       unregisterAll().catch(() => {});
     };
   }, [hotkey, hotkeyMode]);
+
+  // Interactive shortcut recorder keydown listener
+  useEffect(() => {
+    if (!isRecordingShortcut) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (e.key === "Escape") {
+        setIsRecordingShortcut(false);
+        return;
+      }
+
+      const modifiers: string[] = [];
+      if (e.ctrlKey) modifiers.push("Control");
+      if (e.altKey) modifiers.push("Alt");
+      if (e.shiftKey) modifiers.push("Shift");
+      if (e.metaKey) modifiers.push("Super");
+
+      let key = e.key;
+      if (["Control", "Alt", "Shift", "Meta"].includes(key)) {
+        // Still holding down modifier keys, wait for triggering key
+        return;
+      }
+
+      if (key === " ") key = "Space";
+      else if (key.length === 1) key = key.toUpperCase();
+
+      const combination = [...modifiers, key].join("+");
+      const normalized = normalizeShortcut(combination);
+      setHotkey(normalized);
+      localStorage.setItem("suki_hotkey", normalized);
+      setIsRecordingShortcut(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [isRecordingShortcut]);
 
   // Manual toggle button inside the Dashboard UI
   const toggleManualDictation = async () => {
@@ -523,22 +595,101 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-medium text-suki-sand mb-1.5">
-                Global Dictation Shortcut
-              </label>
-              <input
-                type="text"
-                value={hotkey}
-                onChange={(e) => {
-                  setHotkey(e.target.value);
-                  localStorage.setItem("suki_hotkey", e.target.value);
-                }}
-                className="w-full bg-suki-raised border border-suki-line rounded-lg px-3 py-2.5 text-sm font-mono text-suki-ivory shadow-inner focus:outline-none focus:border-suki-emerald focus:ring-1 focus:ring-suki-emerald/30"
-              />
-              <p className="text-[11px] text-suki-muted mt-2">
-                Examples: <code className="suki-keycap">CommandOrControl+Shift+Space</code> or <code className="suki-keycap">Alt+Space</code>
-              </p>
+            {/* Hotkey Customizer */}
+            <div className="bg-suki-surface border border-suki-line/80 shadow-tactile rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block text-xs font-semibold text-suki-ivory flex items-center gap-1.5">
+                    <Keyboard className="w-4 h-4 text-suki-emerald" />
+                    Global Dictation Hotkey
+                  </label>
+                  <p className="text-[11px] text-suki-sand mt-0.5">
+                    Press this combination anywhere across Windows to dictate.
+                  </p>
+                </div>
+
+                {/* Status indicator badge */}
+                {hotkeyStatus.registered ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Active in Windows
+                  </span>
+                ) : (
+                  <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                    title={hotkeyStatus.error}
+                  >
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Not Registered
+                  </span>
+                )}
+              </div>
+
+              {/* Interactive Recorder Button & Display */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRecordingShortcut((prev) => !prev)}
+                  className={`w-full py-3.5 px-4 rounded-xl border text-sm font-mono flex items-center justify-center gap-2 transition-all duration-200 ${
+                    isRecordingShortcut
+                      ? "bg-emerald-500/10 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/30 animate-pulse"
+                      : "bg-suki-raised border-suki-line text-suki-ivory hover:border-suki-emerald/50"
+                  }`}
+                >
+                  <Keyboard className="w-4 h-4 text-suki-emerald" />
+                  {isRecordingShortcut ? (
+                    <span className="font-semibold text-emerald-400">
+                      Press keys together now... (Esc to cancel)
+                    </span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-suki-sand">Current:</span>
+                      <strong className="text-suki-emerald text-sm tracking-wide">{hotkey}</strong>
+                      <span className="text-[11px] text-suki-muted ml-2 px-2 py-0.5 rounded bg-suki-surface border border-suki-line">
+                        Click to Record Combination
+                      </span>
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Quick Presets */}
+              <div>
+                <p className="text-[11px] text-suki-sand mb-2 font-medium">Quick Presets:</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Control+Shift+Space",
+                    "Alt+Space",
+                    "Control+Alt+Space",
+                    "Control+Shift+D",
+                    "F8",
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        const norm = normalizeShortcut(preset);
+                        setHotkey(norm);
+                        localStorage.setItem("suki_hotkey", norm);
+                        setIsRecordingShortcut(false);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition border ${
+                        hotkey === preset
+                          ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-semibold"
+                          : "bg-suki-raised border-suki-line/60 text-suki-sand hover:text-suki-ivory hover:border-suki-line"
+                      }`}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {hotkeyStatus.error && (
+                <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-2.5">
+                  Notice: {hotkeyStatus.error}. Try selecting a different preset above.
+                </p>
+              )}
             </div>
 
             {/* Hotkey Behavior Toggle */}
@@ -605,6 +756,24 @@ export default function Dashboard() {
               <p>
                 - Groq requests are triggered only when you dictate or generate an AI digest.
               </p>
+            </div>
+
+            {/* Quit App Action */}
+            <div className="pt-4 border-t border-suki-line/60 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-suki-ivory">Exit Application</p>
+                <p className="text-[11px] text-suki-sand">
+                  Closing with (✕) keeps Suki active in background for hotkeys. Click to exit completely.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => invoke("quit_app")}
+                className="px-3.5 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-center gap-1.5 transition"
+              >
+                <Power className="w-3.5 h-3.5" />
+                Quit Suki
+              </button>
             </div>
           </div>
         )}
