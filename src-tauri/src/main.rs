@@ -106,6 +106,7 @@ async fn stop_and_transcribe(
     db: State<'_, Mutex<rusqlite::Connection>>,
     key_store: State<'_, ApiKeyStore>,
     api_key: Option<String>,
+    custom_vocab: Option<String>,
 ) -> Result<db::DictationEntry, String> {
     // 1. Resolve API key from argument or stored state
     let effective_key = match api_key.filter(|k| !k.trim().is_empty()) {
@@ -121,6 +122,8 @@ async fn stop_and_transcribe(
         return Err("Please enter your Groq API key in Settings first.".to_string());
     }
 
+    let vocab_str = custom_vocab.unwrap_or_default();
+
     // 2. Grab the active window title BEFORE anything changes
     let active_app = get_active_window_context();
 
@@ -133,8 +136,8 @@ async fn stop_and_transcribe(
         e
     })?;
 
-    // 5. Transcribe with Whisper-Large-V3-Turbo & Polish with Llama
-    let raw_text = match groq::transcribe_wav_bytes(&effective_key, wav_bytes).await {
+    // 5. Transcribe with Whisper-Large-V3-Turbo (with acoustic prompt bias) & Polish with LLM (with dictionary rules)
+    let raw_text = match groq::transcribe_wav_bytes(&effective_key, wav_bytes, &vocab_str).await {
         Ok(t) => t,
         Err(e) => {
             let _ = app.emit("hud-state", serde_json::json!({ "mode": "error" }));
@@ -142,7 +145,7 @@ async fn stop_and_transcribe(
         }
     };
 
-    let polished_text = groq::polish_transcript(&effective_key, &raw_text, &active_app)
+    let polished_text = groq::polish_transcript(&effective_key, &raw_text, &active_app, &vocab_str)
         .await
         .unwrap_or_else(|_| raw_text.clone());
 

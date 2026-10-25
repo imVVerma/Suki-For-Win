@@ -37,7 +37,17 @@ export default function FloatingHud() {
     e.stopPropagation();
     try {
       setMode("processing");
-      await invoke("stop_and_transcribe");
+      const customVocab = (() => {
+        try {
+          const saved = localStorage.getItem("suki_custom_vocab");
+          if (saved) {
+            const arr = JSON.parse(saved);
+            if (Array.isArray(arr)) return arr.join(", ");
+          }
+        } catch (_) {}
+        return "";
+      })();
+      await invoke("stop_and_transcribe", { customVocab });
     } catch (err) {
       console.error("Keep error:", err);
       setMode("error");

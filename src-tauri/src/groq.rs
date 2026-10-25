@@ -167,7 +167,12 @@ async fn call_groq_chat(
 }
 
 /// Step 1: Send in-memory WAV bytes to Groq Whisper-Large-V3-Turbo
-pub async fn transcribe_wav_bytes(api_key: &str, wav_bytes: Vec<u8>) -> Result<String, String> {
+/// Step 1: Send in-memory WAV bytes + Custom Vocabulary Prompt to Groq Whisper
+pub async fn transcribe_wav_bytes(
+    api_key: &str,
+    wav_bytes: Vec<u8>,
+    custom_vocab: &str,
+) -> Result<String, String> {
     if wav_bytes.len() <= 44 {
         return Err("Recording too short or empty. Please speak for at least 1 second.".to_string());
     }
@@ -178,11 +183,17 @@ pub async fn transcribe_wav_bytes(api_key: &str, wav_bytes: Vec<u8>) -> Result<S
         .mime_str("audio/wav")
         .map_err(|e| e.to_string())?;
 
-    let form = Form::new()
+    let mut form = Form::new()
         .part("file", audio_part)
         .text("model", "whisper-large-v3-turbo")
         .text("temperature", "0.0")
         .text("response_format", "json");
+
+    // Bias Whisper's acoustic decoder toward custom names, tech stack & jargon!
+    if !custom_vocab.trim().is_empty() {
+        let whisper_hint = format!("Vocabulary and proper nouns: {}", custom_vocab.trim());
+        form = form.text("prompt", whisper_hint);
+    }
 
     let res = client
         .post("https://api.groq.com/openai/v1/audio/transcriptions")
@@ -205,15 +216,25 @@ pub async fn transcribe_wav_bytes(api_key: &str, wav_bytes: Vec<u8>) -> Result<S
     Ok(parsed.text.trim().to_string())
 }
 
-/// Step 2: Polish transcript with Llama using active window title as context
+/// Step 2: Polish transcript with Groq LLMs + Custom Dictionary & Voice Snippets
 pub async fn polish_transcript(
     api_key: &str,
     raw_text: &str,
     active_window_title: &str,
+    custom_vocab: &str,
 ) -> Result<String, String> {
     if raw_text.trim().is_empty() {
         return Ok(String::new());
     }
+
+    let vocab_instruction = if custom_vocab.trim().is_empty() {
+        String::new()
+    } else {
+        format!(
+            "\n5. CUSTOM DICTIONARY & SNIPPETS: Strictly enforce these exact spellings, proper nouns, and `spoken -> replacement` snippet rules if similar-sounding words appear: [{}].",
+            custom_vocab.trim()
+        )
+    };
 
     let system_prompt = format!(
         "You are an invisible dictation cleanup engine (like Wispr Flow / Suki). \
@@ -222,8 +243,8 @@ pub async fn polish_transcript(
          1. Remove spoken disfluencies, stutters, and filler words ('um', 'uh', 'like', 'you know').\n\
          2. If the user corrects themselves mid-sentence ('meet at 4 no wait 5 PM'), output only the final intended meaning ('meet at 5 PM').\n\
          3. Adapt formatting subtly to the active window (e.g., if in Visual Studio Code or terminal, preserve technical terms, variable casing, and CLI flags accurately; if in email/chat, use natural punctuation).\n\
-         4. Output ONLY the final cleaned text. Never add quotes, preambles, or explanations.",
-        active_window_title
+         4. Output ONLY the final cleaned text. Never add quotes, preambles, or explanations.{}",
+        active_window_title, vocab_instruction
     );
 
     let messages = json!([
