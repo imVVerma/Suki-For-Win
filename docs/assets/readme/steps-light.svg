@@ -1,0 +1,98 @@
+<svg viewBox="0 0 1000 220" width="1000" height="220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="steps-bg-light" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#F5EFE4" />
+    </radialGradient>
+    <linearGradient id="step-card-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#FAF5ED" />
+    </linearGradient>
+  </defs>
+
+  <style>
+    .font-sans { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .font-mono { font-family: 'Consolas', 'JetBrains Mono', 'Courier New', monospace; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1000" height="220" rx="16" fill="url(#steps-bg-light)" stroke="#E5DCCE" stroke-width="1.5" />
+
+  <!-- Connecting Flow Line -->
+  <line x1="140" y1="110" x2="860" y2="110" stroke="#DDD2C1" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- STEP 1: Launch Locally -->
+  <g transform="translate(36, 26)">
+    <rect width="220" height="168" rx="12" fill="url(#step-card-light)" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="32" cy="32" r="14" fill="#315B45" fill-opacity="0.12" stroke="#315B45" stroke-width="1" />
+    <text x="32" y="37" text-anchor="middle" class="font-mono" font-size="12" font-weight="700" fill="#2B583E">01</text>
+    <text x="56" y="36" class="font-sans" font-size="13.5" font-weight="600" fill="#241E19">Clone &amp; Launch</text>
+
+    <text x="18" y="72" class="font-sans" font-size="11.5" font-weight="400" fill="#5C5245">
+      Run in dev mode or install the standalone Windows .exe:
+    </text>
+
+    <rect x="16" y="112" width="188" height="26" rx="6" fill="#F4ECE0" stroke="#DDD2C1" stroke-width="1" />
+    <text x="26" y="129" class="font-mono" font-size="10.5" font-weight="600" fill="#2B583E">npm run tauri dev</text>
+  </g>
+
+  <!-- Flow Arrow 1 -> 2 -->
+  <g transform="translate(260, 105)">
+    <circle cx="6" cy="5" r="3" fill="#B88A3D" />
+  </g>
+
+  <!-- STEP 2: Paste Groq Key -->
+  <g transform="translate(272, 26)">
+    <rect width="220" height="168" rx="12" fill="url(#step-card-light)" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="32" cy="32" r="14" fill="#B88A3D" fill-opacity="0.12" stroke="#B88A3D" stroke-width="1" />
+    <text x="32" y="37" text-anchor="middle" class="font-mono" font-size="12" font-weight="700" fill="#8C6421">02</text>
+    <text x="56" y="36" class="font-sans" font-size="13.5" font-weight="600" fill="#241E19">Paste Free Key</text>
+
+    <text x="18" y="72" class="font-sans" font-size="11.5" font-weight="400" fill="#5C5245">
+      Get a free Groq key and paste inside BYOK Settings:
+    </text>
+
+    <rect x="16" y="112" width="188" height="26" rx="6" fill="#F4ECE0" stroke="#DDD2C1" stroke-width="1" />
+    <text x="26" y="129" class="font-mono" font-size="10.5" font-weight="600" fill="#8C6421">gsk_••••••••••••</text>
+  </g>
+
+  <!-- Flow Arrow 2 -> 3 -->
+  <g transform="translate(496, 105)">
+    <circle cx="6" cy="5" r="3" fill="#A8722B" />
+  </g>
+
+  <!-- STEP 3: Trigger Shortcut -->
+  <g transform="translate(508, 26)">
+    <rect width="220" height="168" rx="12" fill="url(#step-card-light)" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="32" cy="32" r="14" fill="#A8722B" fill-opacity="0.12" stroke="#A8722B" stroke-width="1" />
+    <text x="32" y="37" text-anchor="middle" class="font-mono" font-size="12" font-weight="700" fill="#A8722B">03</text>
+    <text x="56" y="36" class="font-sans" font-size="13.5" font-weight="600" fill="#241E19">Press Hotkey</text>
+
+    <text x="18" y="72" class="font-sans" font-size="11.5" font-weight="400" fill="#5C5245">
+      Press global shortcut anywhere inside any Windows app:
+    </text>
+
+    <rect x="16" y="112" width="188" height="26" rx="6" fill="#F4ECE0" stroke="#DDD2C1" stroke-width="1" />
+    <text x="26" y="129" class="font-mono" font-size="10.5" font-weight="600" fill="#A8722B">Ctrl + Shift + Space</text>
+  </g>
+
+  <!-- Flow Arrow 3 -> 4 -->
+  <g transform="translate(732, 105)">
+    <circle cx="6" cy="5" r="3" fill="#315B45" />
+  </g>
+
+  <!-- STEP 4: Speak & Auto-Paste -->
+  <g transform="translate(744, 26)">
+    <rect width="220" height="168" rx="12" fill="url(#step-card-light)" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="32" cy="32" r="14" fill="#315B45" fill-opacity="0.12" stroke="#315B45" stroke-width="1" />
+    <text x="32" y="37" text-anchor="middle" class="font-mono" font-size="12" font-weight="700" fill="#2B583E">04</text>
+    <text x="56" y="36" class="font-sans" font-size="13.5" font-weight="600" fill="#241E19">Speak &amp; Paste</text>
+
+    <text x="18" y="72" class="font-sans" font-size="11.5" font-weight="400" fill="#5C5245">
+      Speak naturally. Hit hotkey or click ✓ to paste at cursor:
+    </text>
+
+    <rect x="16" y="112" width="188" height="26" rx="6" fill="#2B583E" fill-opacity="0.1" stroke="#315B45" stroke-width="1" />
+    <text x="26" y="129" class="font-sans" font-size="10.5" font-weight="600" fill="#2B583E">✓ Formatted Text Pasted</text>
+  </g>
+</svg>

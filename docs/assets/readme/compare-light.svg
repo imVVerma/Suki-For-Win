@@ -1,0 +1,78 @@
+<svg viewBox="0 0 1000 360" width="1000" height="360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="cmp-bg-light" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#F5EFE4" />
+    </radialGradient>
+    <linearGradient id="suki-col-bg-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="100%" stopColor="#FAF4EB" />
+    </linearGradient>
+  </defs>
+
+  <style>
+    .font-sans { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .font-mono { font-family: 'Consolas', 'JetBrains Mono', 'Courier New', monospace; }
+  </style>
+
+  <!-- Outer Card Background -->
+  <rect width="1000" height="360" rx="16" fill="url(#cmp-bg-light)" stroke="#E5DCCE" stroke-width="1.5" />
+
+  <!-- Suki Highlight Column Background Pill -->
+  <rect x="355" y="24" width="310" height="312" rx="12" fill="url(#suki-col-bg-light)" stroke="#315B45" stroke-opacity="0.3" stroke-width="1" />
+
+  <!-- ================= TABLE HEADERS ================= -->
+  <g transform="translate(0, 56)">
+    <text x="50" y="0" class="font-sans" font-size="12" font-weight="600" fill="#8A7D6C" letter-spacing="0.5" text-transform="uppercase">Core Feature</text>
+
+    <!-- Suki Header with Badge -->
+    <text x="380" y="0" class="font-sans" font-size="14.5" font-weight="700" fill="#241E19">Suki for Windows</text>
+    <rect x="525" y="-12" width="68" height="18" rx="9" fill="#2B583E" />
+    <text x="559" y="1" text-anchor="middle" class="font-sans" font-size="9" font-weight="700" fill="#FFFFFF">FREE · MIT</text>
+
+    <!-- Competitor Header -->
+    <text x="720" y="0" class="font-sans" font-size="14.5" font-weight="600" fill="#8A7D6C">Wispr Flow</text>
+  </g>
+
+  <!-- Header Divider Line -->
+  <line x1="50" y1="72" x2="950" y2="72" stroke="#E5DCCE" stroke-width="1" />
+
+  <!-- ================= ROW 1: PRICE ================= -->
+  <g transform="translate(0, 108)">
+    <text x="50" y="0" class="font-sans" font-size="13" font-weight="500" fill="#5C5245">Monthly Subscription</text>
+    <text x="380" y="0" class="font-sans" font-size="13.5" font-weight="700" fill="#2B583E">$0 Forever (Free BYOK Tier)</text>
+    <text x="720" y="0" class="font-sans" font-size="13" font-weight="500" fill="#A8523A">$15 / month ($180 / yr)</text>
+  </g>
+  <line x1="50" y1="122" x2="950" y2="122" stroke="#EFE7DA" stroke-width="1" />
+
+  <!-- ================= ROW 2: FOOTPRINT ================= -->
+  <g transform="translate(0, 156)">
+    <text x="50" y="0" class="font-sans" font-size="13" font-weight="500" fill="#5C5245">App Size &amp; Architecture</text>
+    <text x="380" y="0" class="font-sans" font-size="13.5" font-weight="700" fill="#241E19">~8 MB (Tauri v2 + Rust)</text>
+    <text x="720" y="0" class="font-sans" font-size="13" font-weight="400" fill="#8A7D6C">~500 MB+ (Electron)</text>
+  </g>
+  <line x1="50" y1="170" x2="950" y2="170" stroke="#EFE7DA" stroke-width="1" />
+
+  <!-- ================= ROW 3: PRIVACY ================= -->
+  <g transform="translate(0, 204)">
+    <text x="50" y="0" class="font-sans" font-size="13" font-weight="500" fill="#5C5245">Audio Stream Privacy</text>
+    <text x="380" y="0" class="font-sans" font-size="13.5" font-weight="700" fill="#2B583E">100% In-Memory RAM (Zero SSD writes)</text>
+    <text x="720" y="0" class="font-sans" font-size="13" font-weight="400" fill="#8A7D6C">Closed Cloud Processing</text>
+  </g>
+  <line x1="50" y1="218" x2="950" y2="218" stroke="#EFE7DA" stroke-width="1" />
+
+  <!-- ================= ROW 4: ANALYTICS & DIGEST ================= -->
+  <g transform="translate(0, 252)">
+    <text x="50" y="0" class="font-sans" font-size="13" font-weight="500" fill="#5C5245">AI Daily Digest &amp; WPM</text>
+    <text x="380" y="0" class="font-sans" font-size="13.5" font-weight="700" fill="#8C6421">Built-in Local SQLite Database</text>
+    <text x="720" y="0" class="font-sans" font-size="13" font-weight="400" fill="#8A7D6C">None</text>
+  </g>
+  <line x1="50" y1="266" x2="950" y2="266" stroke="#EFE7DA" stroke-width="1" />
+
+  <!-- ================= ROW 5: OPEN SOURCE ================= -->
+  <g transform="translate(0, 300)">
+    <text x="50" y="0" class="font-sans" font-size="13" font-weight="500" fill="#5C5245">License &amp; Code Access</text>
+    <text x="380" y="0" class="font-sans" font-size="13.5" font-weight="700" fill="#2B583E">100% Open Source (MIT License)</text>
+    <text x="720" y="0" class="font-sans" font-size="13" font-weight="400" fill="#8A7D6C">Proprietary / Closed</text>
+  </g>
+</svg>

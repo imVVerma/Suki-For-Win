@@ -1,0 +1,136 @@
+<svg viewBox="0 0 1000 380" width="1000" height="380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Light Mode Background Gradient -->
+    <radialGradient id="bg-glow-light" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stopColor="#FFFFFF" />
+      <stop offset="55%" stopColor="#FBF7F0" />
+      <stop offset="100%" stopColor="#F3EDE2" />
+    </radialGradient>
+    <linearGradient id="hud-pill-border-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#315B45" stopOpacity="0.4" />
+      <stop offset="50%" stopColor="#DDD2C1" />
+      <stop offset="100%" stopColor="#B88A3D" stopOpacity="0.3" />
+    </linearGradient>
+    <linearGradient id="logo-gold-light" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#D9C18C" />
+      <stop offset="50%" stopColor="#B88A3D" />
+      <stop offset="100%" stopColor="#8C6421" />
+    </linearGradient>
+    <linearGradient id="logo-emerald-light" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#4E8163" />
+      <stop offset="100%" stopColor="#254A35" />
+    </linearGradient>
+    <linearGradient id="logo-amber-light" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#C99B52" />
+      <stop offset="60%" stopColor="#A8722B" />
+      <stop offset="100%" stopColor="#7A4E15" />
+    </linearGradient>
+    <filter id="shadow-light" x="-8%" y="-8%" width="116%" height="124%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#5C5245" flood-opacity="0.12" />
+    </filter>
+  </defs>
+
+  <style>
+    .font-sans { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .font-mono { font-family: 'Consolas', 'JetBrains Mono', 'Courier New', monospace; }
+  </style>
+
+  <!-- Canvas Background -->
+  <rect width="1000" height="380" rx="16" fill="url(#bg-glow-light)" stroke="#E5DCCE" stroke-width="1.5" />
+
+  <!-- Top Brand Header (Geometric Logo + Badge) -->
+  <g transform="translate(482, 28)">
+    <g transform="translate(-18, 0) scale(0.56)">
+      <rect x="14" y="9" width="36" height="8.5" rx="4.25" fill="url(#logo-gold-light)" />
+      <line x1="24" y1="11" x2="24" y2="15.5" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+      <line x1="32" y1="11" x2="32" y2="15.5" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+      <line x1="40" y1="11" x2="40" y2="15.5" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+
+      <rect x="14" y="9" width="8.5" height="28" rx="4.25" fill="url(#logo-emerald-light)" />
+
+      <rect x="14" y="27.75" width="36" height="8.5" rx="4.25" fill="url(#logo-amber-light)" />
+      <line x1="24" y1="29.75" x2="24" y2="34.25" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+      <line x1="32" y1="29.75" x2="32" y2="34.25" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" />
+      <line x1="40" y1="29.75" x2="40" y2="34.25" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+
+      <rect x="41.5" y="27.75" width="8.5" height="27.25" rx="4.25" fill="url(#logo-emerald-light)" />
+
+      <rect x="14" y="46.5" width="36" height="8.5" rx="4.25" fill="url(#logo-gold-light)" />
+      <line x1="24" y1="48.5" x2="24" y2="53" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+      <line x1="32" y1="48.5" x2="32" y2="53" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+      <line x1="40" y1="48.5" x2="40" y2="53" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" />
+
+      <circle cx="45.5" cy="13.25" r="2.2" fill="#315B45" />
+      <circle cx="18.25" cy="50.75" r="2.2" fill="#B88A3D" />
+    </g>
+  </g>
+
+  <!-- Title & Headline -->
+  <text x="500" y="98" text-anchor="middle" class="font-sans" font-size="28" font-weight="700" fill="#241E19" letter-spacing="-0.5">Suki for Windows</text>
+  <text x="500" y="126" text-anchor="middle" class="font-sans" font-size="14.5" font-weight="400" fill="#5C5245">Free, private AI dictation &amp; workflow intelligence for every app on Windows 10 &amp; 11</text>
+
+  <!-- Centerpiece: Floating HUD Pill Mockup -->
+  <g transform="translate(270, 160)" filter="url(#shadow-light)">
+    <!-- Pill Container -->
+    <rect width="460" height="64" rx="32" fill="#FFFFFF" stroke="url(#hud-pill-border-light)" stroke-width="1.5" />
+
+    <!-- Pulsing Rec Dot + Timer -->
+    <g transform="translate(24, 22)">
+      <circle cx="10" cy="10" r="9" fill="#A8523A" fill-opacity="0.15" />
+      <circle cx="10" cy="10" r="5" fill="#A8523A" />
+      <text x="26" y="14" class="font-mono" font-size="13" font-weight="600" fill="#241E19">04.2s</text>
+    </g>
+
+    <!-- 5 Animated Acoustic Equalizer Bars -->
+    <g transform="translate(170, 18)">
+      <rect x="0" y="8" width="4" height="12" rx="2" fill="#315B45" />
+      <rect x="9" y="1" width="4" height="26" rx="2" fill="#B88A3D" />
+      <rect x="18" y="5" width="4" height="18" rx="2" fill="#315B45" />
+      <rect x="27" y="0" width="4" height="28" rx="2" fill="#B88A3D" />
+      <rect x="36" y="6" width="4" height="16" rx="2" fill="#315B45" />
+    </g>
+
+    <!-- Active Window Context Badge inside HUD -->
+    <g transform="translate(245, 20)">
+      <rect width="112" height="24" rx="6" fill="#F4ECE0" stroke="#DDD2C1" stroke-width="1" />
+      <text x="56" y="16" text-anchor="middle" class="font-sans" font-size="10" font-weight="500" fill="#5C5245">VS Code Mode</text>
+    </g>
+
+    <!-- Action Buttons (✕ Discard & ✓ Keep) -->
+    <g transform="translate(372, 14)">
+      <!-- Discard Button -->
+      <circle cx="18" cy="18" r="17" fill="#A8523A" fill-opacity="0.1" stroke="#A8523A" stroke-opacity="0.35" stroke-width="1" />
+      <path d="M 13 13 L 23 23 M 23 13 L 13 23" stroke="#A8523A" stroke-width="2" stroke-linecap="round" />
+
+      <!-- Keep Button -->
+      <circle cx="58" cy="18" r="17" fill="#2B583E" stroke="#315B45" stroke-width="1.5" />
+      <path d="M 52 18 L 56 22 L 64 14" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>
+
+  <!-- Non-Activating HUD Callout Tag -->
+  <g transform="translate(500, 246)">
+    <text x="0" y="0" text-anchor="middle" class="font-sans" font-size="11" font-weight="500" fill="#8A7D6C">
+      <tspan fill="#2B583E" font-weight="600">WS_EX_NOACTIVATE</tspan> — Floating pill never steals keyboard focus from your target window
+    </text>
+  </g>
+
+  <!-- Bottom Feature Pill Badges -->
+  <g transform="translate(130, 296)">
+    <rect x="0" y="0" width="168" height="32" rx="16" fill="#FFFFFF" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="16" cy="16" r="3.5" fill="#315B45" />
+    <text x="28" y="20" class="font-sans" font-size="11" font-weight="500" fill="#241E19">Windows 10 &amp; 11 (x64)</text>
+
+    <rect x="182" y="0" width="170" height="32" rx="16" fill="#FFFFFF" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="198" cy="16" r="3.5" fill="#B88A3D" />
+    <text x="210" y="20" class="font-sans" font-size="11" font-weight="500" fill="#241E19">Tauri v2 + Rust (~8 MB)</text>
+
+    <rect x="366" y="0" width="186" height="32" rx="16" fill="#FFFFFF" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="382" cy="16" r="3.5" fill="#315B45" />
+    <text x="394" y="20" class="font-sans" font-size="11" font-weight="500" fill="#241E19">Zero-Disk RAM Audio (cpal)</text>
+
+    <rect x="566" y="0" width="174" height="32" rx="16" fill="#FFFFFF" stroke="#DDD2C1" stroke-width="1" />
+    <circle cx="582" cy="16" r="3.5" fill="#A8722B" />
+    <text x="594" y="20" class="font-sans" font-size="11" font-weight="500" fill="#241E19">100% Free Forever (BYOK)</text>
+  </g>
+</svg>
