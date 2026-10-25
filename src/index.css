@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply antialiased select-none;
+  }
+
+}
+
+.suki-dashboard {
+  background-color: #171512;
+  background-image: radial-gradient(
+    ellipse at top,
+    rgba(214, 171, 104, 0.07),
+    transparent 70%
+  );
+  background-attachment: fixed;
+}
+
+.suki-keycap {
+  @apply rounded-md border border-suki-line border-b-2 bg-suki-raised px-1.5 py-0.5 font-mono text-[11px] text-suki-ivory shadow-sm;
+}
+
+@keyframes sukiWave {
+  0%,
+  100% {
+    transform: scaleY(0.42);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.suki-wave-bar {
+  transform-origin: center;
+  animation: sukiWave 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suki-wave-bar {
+    animation: none;
+    transform: scaleY(0.65);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #29241e;
+  border: 1px solid #40382f;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #332c24;
+}
