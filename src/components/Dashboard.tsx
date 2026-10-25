@@ -32,7 +32,14 @@ import {
   RotateCcw,
   Sliders,
   Trash2,
+  Palette,
 } from "lucide-react";
+import LogoShowcase, {
+  LogoConceptA,
+  LogoConceptB,
+  LogoConceptC,
+  LogoConceptD,
+} from "./LogoShowcase";
 
 export interface DictationEntry {
   id: number;
@@ -122,6 +129,8 @@ export default function Dashboard() {
   }>({ registered: false });
   const [isRecordingShortcut, setIsRecordingShortcut] = useState<boolean>(false);
   const [autoStart, setAutoStart] = useState<boolean>(false);
+  const [showLogoLab, setShowLogoLab] = useState<boolean>(true);
+  const [activeLogoConcept, setActiveLogoConcept] = useState<string>("A");
 
   // Custom Dictionary & Voice Snippets State
   const [vocabList, setVocabList] = useState<string[]>(() => {
@@ -557,8 +566,11 @@ export default function Dashboard() {
       {/* Top Header */}
       <header className="border-b border-suki-line/80 px-6 py-4 flex items-center justify-between bg-suki-surface/80 shadow-tactile">
         <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-suki-raised border border-suki-line shadow-tactile flex items-center justify-center text-suki-emerald">
-            <Mic className="w-5 h-5" />
+          <div className="h-9 w-9 rounded-xl bg-suki-raised border border-suki-line shadow-tactile flex items-center justify-center p-1.5 transition-all">
+            {activeLogoConcept === "A" && <LogoConceptA size={24} />}
+            {activeLogoConcept === "B" && <LogoConceptB size={24} />}
+            {activeLogoConcept === "C" && <LogoConceptC size={24} />}
+            {activeLogoConcept === "D" && <LogoConceptD size={24} />}
           </div>
           <div>
             <h1 className="text-base font-semibold tracking-tight flex items-center gap-2">
@@ -577,17 +589,33 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <button
-          onClick={toggleManualDictation}
-          className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border shadow-tactile transition-all duration-200 ease-spring active:scale-[0.98] ${
-            isRecording
-              ? "bg-suki-terracotta/15 text-suki-terracotta border-suki-terracotta/40"
-              : "bg-suki-emeraldDeep hover:bg-suki-emerald/30 text-suki-ivory border-suki-emerald/40"
-          }`}
-        >
-          <Mic className="w-3.5 h-3.5" />
-          {isRecording ? "Stop & Transcribe" : "Test Dictation"}
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setShowLogoLab((prev) => !prev)}
+            className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 border shadow-tactile transition-all duration-200 ease-spring active:scale-[0.98] ${
+              showLogoLab
+                ? "bg-suki-champagne/15 text-suki-champagne border-suki-champagne/40"
+                : "bg-suki-raised hover:bg-suki-elevated text-suki-sand hover:text-suki-ivory border-suki-line"
+            }`}
+            title="Toggle Suki-Win Geometric Logo Design Showcase"
+          >
+            <Palette className="w-3.5 h-3.5 text-suki-champagne" />
+            {showLogoLab ? "Hide Logo Lab" : "Logo Lab (4 Concepts)"}
+          </button>
+
+          <button
+            onClick={toggleManualDictation}
+            className={`px-4 py-2 rounded-lg text-xs font-medium flex items-center gap-2 border shadow-tactile transition-all duration-200 ease-spring active:scale-[0.98] ${
+              isRecording
+                ? "bg-suki-terracotta/15 text-suki-terracotta border-suki-terracotta/40"
+                : "bg-suki-emeraldDeep hover:bg-suki-emerald/30 text-suki-ivory border-suki-emerald/40"
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5" />
+            {isRecording ? "Stop & Transcribe" : "Test Dictation"}
+          </button>
+        </div>
       </header>
 
       {statusBanner && (
@@ -684,6 +712,12 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto p-6">
+        {showLogoLab && (
+          <LogoShowcase
+            onSelectConcept={(id) => setActiveLogoConcept(id)}
+            onClose={() => setShowLogoLab(false)}
+          />
+        )}
         {activeTab === "history" && (
           <div className="space-y-4">
             {/* Search Bar */}
